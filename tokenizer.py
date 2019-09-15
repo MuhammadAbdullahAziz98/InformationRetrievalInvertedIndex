@@ -12,6 +12,7 @@ import glob, os
 import sys
 from bs4 import BeautifulSoup,Comment
 import re
+from nltk.stem.porter import PorterStemmer
 
 #getting arguments:
 
@@ -27,6 +28,7 @@ if os.path.exists(filename):
     os.chdir(filename)
     i = 0
     worddict =  dict()
+    p_stemmer = PorterStemmer()
     for file in glob.glob("clueweb12-0000tw-14-17002.txt"):
         #print(file)
         fp = open(file,'r',encoding=" Latin-1 ")
@@ -46,14 +48,14 @@ if os.path.exists(filename):
             for w in docWords:
                 wordlist.append(re.findall(pattern,w))
             vocab = [item for sublist in wordlist for item in sublist]
-            for w in stopwords:
-                worddict.pop(w, None)
+            
             for w in vocab:
-                if w.lower() not in worddict and w.lower() not in stopwords:
-                    worddict[w.lower()] = i
+                w = w.lower()
+                w = p_stemmer.stem(w)
+                if w not in worddict and w not in stopwords:
+                    worddict[w] = i
                     i = i+1
 
-                #print(re.findall(pattern,w))
             print(worddict)            
             print("FILE ENDS HEREE!!!!!!!!!!!!!!!!!!")
 else:
