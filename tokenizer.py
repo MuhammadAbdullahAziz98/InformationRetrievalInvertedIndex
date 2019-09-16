@@ -125,14 +125,19 @@ if os.path.exists(filename):
     print("ENCODING STARTS:")
     for w in wordinfoHash:
         for p in range(len(wordinfoHash[w].docs)-1,0,-1):
-            wordinfoHash[w].docs[p] = wordinfoHash[w].docs[p] -wordinfoHash[w].docs[p-1]
+            wordinfoHash[w].docs[p] = wordinfoHash[w].docs[p] - wordinfoHash[w].docs[p-1]
     for w in wordinfoHash:
         for p in range(len(wordinfoHash[w].pos)-1,0,-1):
             if wordinfoHash[w].pos[p] -wordinfoHash[w].pos[p-1]>=0:
-                wordinfoHash[w].pos[p] = wordinfoHash[w].pos[p] -wordinfoHash[w].pos[p-1]
+                wordinfoHash[w].pos[p] = wordinfoHash[w].pos[p] - wordinfoHash[w].pos[p-1]
     
-    #for w in range(0,len(wordinfoWithoutHash)):
-        #for p in range(0,len(wordinfoWithoutHash[w].pos)):
+    for w in range(0,len(wordinfoWithoutHash)):
+        for p in range(len(wordinfoWithoutHash[w].docs)-1,0,-1):
+            wordinfoWithoutHash[w].docs[p] = wordinfoWithoutHash[w].docs[p] - wordinfoWithoutHash[w].docs[p-1]
+    for w in range(0,len(wordinfoWithoutHash)):
+        for p in range(len(wordinfoWithoutHash[w].docs)-1,0,-1):
+            if wordinfoWithoutHash[w].pos[p] -wordinfoWithoutHash[w].pos[p-1]>=0:
+                wordinfoWithoutHash[w].pos[p] = wordinfoWithoutHash[w].pos[p] - wordinfoWithoutHash[w].pos[p-1]
     
     #inverted index with hashmap 
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_hashmap.txt", "w",encoding=" utf-8 ")
@@ -153,3 +158,4 @@ if os.path.exists(filename):
     
 else:
     print("Folder doesn't exist, try entering the complete path")
+
