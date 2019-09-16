@@ -14,6 +14,20 @@ from bs4 import BeautifulSoup,Comment
 import re
 from nltk.stem.porter import PorterStemmer
 
+class TokenHashmap:
+    numberOfOccurences = 0
+    totalNoOfDocs = 0
+    docs = list()
+    pos = list()
+
+    
+class TokenWithoutHashmap:
+    termid = 0;
+    numberOfOccurences = 0
+    totalNoOfDocs = 0
+    docs = list()
+    pos = list()
+
 #getting arguments:
 
 filename = sys.argv[1]
@@ -27,17 +41,17 @@ if os.path.exists(stopwordsFile):
 if os.path.exists(filename):
     os.chdir(filename)
     termid = 0
-    docid=  0
+    docid=  -1
     worddict =  dict()
+    wordinfoHash = dict()
+    wordinfoWithoutHash = list()
     p_stemmer = PorterStemmer()
     for file in glob.glob("*.txt"):
-        #print(file)
         fp = open(file,'r',encoding=" Latin-1 ")
         fd = open(r"C:\Users\lenovo\Documents\irAssignment1\docids.txt", "a",encoding=" utf-8 ")
         fd.write(file + "\\t" + str(docid)+"\n")
         fd.close()
         docid = docid+1
-        #print(fp.read())
         soup = BeautifulSoup(fp, 'html.parser')
         el = soup.find('body')
         if el:
@@ -59,12 +73,55 @@ if os.path.exists(filename):
                 w = p_stemmer.stem(w)
                 if w not in worddict and w not in stopwords:
                     worddict[w] = termid
+                    wordinfoHash[termid] = TokenHashmap()
+                    wordinfoHash[termid].docs = list()
+                    wordinfoHash[termid].pos = list()
+                    wordinfoHash[termid].docs.append(docid)
+                    wordinfoHash[termid].pos.append(fp.tell())
+                    wordinfoHash[termid].numberOfOccurences = wordinfoHash[termid].numberOfOccurences+1
+                    wordinfoHash[termid].totalNoOfDocs = wordinfoHash[termid].totalNoOfDocs+1
+                    #without hashmap:
+                    wordinfoWithoutHash.append(TokenWithoutHashmap())
+                    wordinfoWithoutHash[termid].termid = termid
+                    wordinfoWithoutHash[termid].docs = list()
+                    wordinfoWithoutHash[termid].pos = list()
+                    wordinfoWithoutHash[termid].docs.append(docid)
+                    wordinfoWithoutHash[termid].pos.append(fp.tell())
+                    wordinfoWithoutHash[termid].numberOfOccurences = wordinfoWithoutHash[termid].numberOfOccurences+1
+                    wordinfoWithoutHash[termid].totalNoOfDocs = wordinfoWithoutHash[termid].totalNoOfDocs+1
+
                     termid = termid+1
-            #print(worddict)            
-            #print("FILE ENDS HEREE!!!!!!!!!!!!!!!!!!")
+                else:
+                    ids = worddict.get(w,None)
+                    if ids:
+                        print(ids)
+                        wordinfoHash[ids].pos.append(fp.tell())
+                        wordinfoHash[ids].docs.append(docid)
+                        wordinfoHash[ids].numberOfOccurences = wordinfoHash[ids].numberOfOccurences+1
+                        wordinfoHash[ids].totalNoOfDocs = wordinfoHash[ids].totalNoOfDocs+1
+                        #without hashmap
+                        wordinfoWithoutHash[ids].docs.append(docid)
+                        wordinfoWithoutHash[ids].pos.append(fp.tell())
+                        wordinfoWithoutHash[ids].numberOfOccurences = wordinfoWithoutHash[termid].numberOfOccurences+1
+                        wordinfoWithoutHash[ids].totalNoOfDocs = wordinfoWithoutHash[termid].totalNoOfDocs+1
+
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termids.txt", "w",encoding=" utf-8 ")
     for w in worddict:
         f.write(w + "\\t" + str(worddict[w])+"\n")
+    f.close()
+    f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_hashmap.txt", "w",encoding=" utf-8 ")
+    for w in wordinfoHash:
+        f.write(str(w) + " " + str(wordinfoHash[w].numberOfOccurences) +" "+str(wordinfoHash[w].totalNoOfDocs) +" ")
+        for p in range(0,len(wordinfoHash[w].pos)):
+            f.write(str(wordinfoHash[w].docs[p]) +","+str(wordinfoHash[w].pos[p]) + " ")
+        f.write("\n")            
+    f.close()
+    f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_withouthashmap.txt", "w",encoding=" utf-8 ")
+    for w in wordinfoWithoutHash:
+        f.write(str(wordinfoWithoutHash[w].termid) + " " + str(wordinfoWithoutHash[w].numberOfOccurences) +" "+str(wordinfoWithoutHash[w].totalNoOfDocs) +" ")
+        for p in range(0,len(wordinfoWithoutHash[w].pos)):
+            f.write(str(wordinfoWithoutHash[w].docs[p]) +","+str(wordinfoWithoutHash[w].pos[p]) + " ")
+        f.write("\n")            
     f.close()
     
 else:
