@@ -99,11 +99,16 @@ if os.path.exists(filename):
                         wordinfoHash[ids].docs.append(docid)
                         wordinfoHash[ids].numberOfOccurences = wordinfoHash[ids].numberOfOccurences+1
                         wordinfoHash[ids].totalNoOfDocs = wordinfoHash[ids].totalNoOfDocs+1
-                        #without hashmap
-                        wordinfoWithoutHash[ids].docs.append(docid)
-                        wordinfoWithoutHash[ids].pos.append(fp.tell())
-                        wordinfoWithoutHash[ids].numberOfOccurences = wordinfoWithoutHash[termid].numberOfOccurences+1
-                        wordinfoWithoutHash[ids].totalNoOfDocs = wordinfoWithoutHash[termid].totalNoOfDocs+1
+                    #without hashmap
+                    idW = None
+                    for ind in range(0,len(wordinfoWithoutHash)):
+                        if wordinfoWithoutHash[ind].termid == ids:
+                            idW = ind
+                    if idW:
+                        wordinfoWithoutHash[idW].docs.append(docid)
+                        wordinfoWithoutHash[idW].pos.append(fp.tell())
+                        wordinfoWithoutHash[idW].numberOfOccurences = wordinfoWithoutHash[idW].numberOfOccurences+1
+                        wordinfoWithoutHash[idW].totalNoOfDocs = wordinfoWithoutHash[idW].totalNoOfDocs+1
 
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termids.txt", "w",encoding=" utf-8 ")
     for w in worddict:
@@ -117,7 +122,7 @@ if os.path.exists(filename):
         f.write("\n")            
     f.close()
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_withouthashmap.txt", "w",encoding=" utf-8 ")
-    for w in wordinfoWithoutHash:
+    for w in range(0,len(wordinfoWithoutHash)):
         f.write(str(wordinfoWithoutHash[w].termid) + " " + str(wordinfoWithoutHash[w].numberOfOccurences) +" "+str(wordinfoWithoutHash[w].totalNoOfDocs) +" ")
         for p in range(0,len(wordinfoWithoutHash[w].pos)):
             f.write(str(wordinfoWithoutHash[w].docs[p]) +","+str(wordinfoWithoutHash[w].pos[p]) + " ")
