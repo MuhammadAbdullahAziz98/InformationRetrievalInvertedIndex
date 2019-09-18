@@ -23,16 +23,23 @@ class TokenHashmap:
     
 class TokenWithoutHashmap:
     termid = 0;
+    docid = 0
+    pos = 0
+
+class Token:
     numberOfOccurences = 0
     totalNoOfDocs = 0
     docs = list()
     pos = list()
+    termid = 0
 
+def custom_sort(t):
+    return t.termid
 #getting arguments:
 
 filename = sys.argv[1]
 stopwords = dict()
-stopwordsFile = r"C:\Users\lenovo\Downloads\stoplist.txt"   #change  apth for stopwords list
+stopwordsFile = r"C:\Users\lenovo\Downloads\stoplist.txt"   #change  path for stopwords list
 if os.path.exists(stopwordsFile):
     swfp = open(stopwordsFile,'r')
     content = swfp.readlines()
@@ -47,7 +54,7 @@ if os.path.exists(filename):
     wordinfoWithoutHash = list()
     p_stemmer = PorterStemmer()
     for file in glob.glob("*.txt"):
-        fp = open(file,'r',encoding=" Latin-1 ")
+        fp = open(file,'r',encoding='utf-8', errors='ignore')
         fd = open(r"C:\Users\lenovo\Documents\irAssignment1\docids.txt", "a",encoding=" utf-8 ")
         fd.write(file + "\\t" + str(docid)+"\n")
         fd.close()
@@ -57,64 +64,84 @@ if os.path.exists(filename):
         if el:
             for element in el(text=lambda text: isinstance(text, Comment)):
                 element.extract()
-            soup.prettify()
             for script in soup(["script", "style"]):                   
-                script.decompose()
+                script.extract()
+            soup.prettify()
             docWords = list(el.stripped_strings)
            # print(docWords)
-            wordlist = list()
-            pattern = pattern = r'[A-Z]{2,}(?![a-z])|[A-Z][a-z]+(?=[A-Z])|\w+-\w+|\w+.\w+|\w+_\w+'
+            vocab = list()
+            pattern = pattern = r'[A-Z]+\-[A-Z]+|[a-z]+\-[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'#[A-Z]+|[A-Z][a-z]+|[a-z]+|[0-9]+|\w+-\w+|\w+.\w+|\w+_\w+'
             for w in docWords:
-                wordlist.append(re.findall(pattern,w))
-            vocab = [item for sublist in wordlist for item in sublist]
+                vocab.append(re.findall(pattern,w))
+            vocab = [item for sublist in vocab for item in sublist]
             for i, w in enumerate(vocab):
                 w = w.lower()
                 w = p_stemmer.stem(w)
                 if w not in worddict and w not in stopwords:
                     worddict[w] = termid
+                    print(termid)
                     wordinfoHash[termid] = TokenHashmap()
                     wordinfoHash[termid].docs = list()
                     wordinfoHash[termid].pos = list()
                     wordinfoHash[termid].docs.append(docid)
                     wordinfoHash[termid].pos.append(i)
                     wordinfoHash[termid].numberOfOccurences = wordinfoHash[termid].numberOfOccurences+1
-                    wordinfoHash[termid].totalNoOfDocs = wordinfoHash[termid].totalNoOfDocs+1
-                    #without hashmap:
-                    wordinfoWithoutHash.append(TokenWithoutHashmap())
-                    wordinfoWithoutHash[termid].termid = termid
-                    wordinfoWithoutHash[termid].docs = list()
-                    wordinfoWithoutHash[termid].pos = list()
-                    wordinfoWithoutHash[termid].docs.append(docid)
-                    wordinfoWithoutHash[termid].pos.append(i)
-                    wordinfoWithoutHash[termid].numberOfOccurences = wordinfoWithoutHash[termid].numberOfOccurences+1
-                    wordinfoWithoutHash[termid].totalNoOfDocs = wordinfoWithoutHash[termid].totalNoOfDocs+1
-
+                    wordinfoHash[termid].totalNoOfDocs = wordinfoHash[termid].totalNoOfDocs+1    
+                    #without hashmap
+                    t = TokenWithoutHashmap()
+                    t.docid = docid
+                    t.termid = termid
+                    t.pos = i
+                    wordinfoWithoutHash.append(t)
                     termid = termid+1
                 else:
                     ids = worddict.get(w,None)
                     if ids:
-                        print(ids)
+                        #print(ids)
                         wordinfoHash[ids].pos.append(i)
                         wordinfoHash[ids].docs.append(docid)
                         wordinfoHash[ids].numberOfOccurences = wordinfoHash[ids].numberOfOccurences+1
                         wordinfoHash[ids].totalNoOfDocs = wordinfoHash[ids].totalNoOfDocs+1
-                    #without hashmap
-                    idW = None
-                    for ind in range(0,len(wordinfoWithoutHash)):
-                        if wordinfoWithoutHash[ind].termid == ids:
-                            idW = ind
-                    if idW:
-                        wordinfoWithoutHash[idW].docs.append(docid)
-                        wordinfoWithoutHash[idW].pos.append(i)
-                        wordinfoWithoutHash[idW].numberOfOccurences = wordinfoWithoutHash[idW].numberOfOccurences+1
-                        wordinfoWithoutHash[idW].totalNoOfDocs = wordinfoWithoutHash[idW].totalNoOfDocs+1
-    #sorting
+                        t = TokenWithoutHashmap()
+                        t.docid = docid
+                        t.termid = ids
+                        t.pos = i
+                        wordinfoWithoutHash.append(t)
+
+    #sorting for hashmap
     idW=0                
-    for idW in range(0,len(wordinfoWithoutHash)):
-        [list(x) for x in zip(*sorted(zip(wordinfoWithoutHash[idW].docs, wordinfoWithoutHash[idW].pos), key=itemgetter(0)))]
-    ids=0                
-    for idW in range(0,len(wordinfoWithoutHash)):
-        [list(x) for x in zip(*sorted(zip(wordinfoHash[ids].docs, wordinfoHash[ids].pos), key=itemgetter(0)))]
+    
+    #without hashmap:
+    #sort on termid:
+    wordinfoWithoutHash.sort(key = custom_sort)
+    #merging on same term id: 
+    wordinfo = list()
+    oldtid = 0
+    newtid = 0
+    olddocid = 0
+    newdocid = 0
+    t= Token()
+    for w in range(0,len(wordinfoWithoutHash)):
+        newtid = wordinfoWithoutHash[w].termid
+        if newtid == oldtid and newtid!=0:
+            t.numberOfOccurences = t.numberOfOccurences+1
+            t.docs.append(wordinfoWithoutHash[w].docid)
+            t.pos.append(wordinfoWithoutHash[w].pos)
+            if olddocid == newdocid:
+                t.totalNoOfDocs = t.totalNoOfDocs+1
+            else:
+                olddocid = newdocid
+        else:    
+            oldtid = newtid
+            t = Token()
+            t.termid = newtid
+            t.totalNoOfDocs = t.totalNoOfDocs+1
+            t.numberOfOccurences = t.numberOfOccurences+1
+            t.docs = list()
+            t.pos = list()
+            t.docs.append(wordinfoWithoutHash[w].docid)
+            t.pos.append(wordinfoWithoutHash[w].pos)
+            wordinfo.append(t)
     #termids.txt
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termids.txt", "w",encoding=" utf-8 ")
     for w in worddict:
@@ -131,13 +158,13 @@ if os.path.exists(filename):
             if wordinfoHash[w].pos[p] -wordinfoHash[w].pos[p-1]>=0:
                 wordinfoHash[w].pos[p] = wordinfoHash[w].pos[p] - wordinfoHash[w].pos[p-1]
     
-    for w in range(0,len(wordinfoWithoutHash)):
-        for p in range(len(wordinfoWithoutHash[w].docs)-1,0,-1):
-            wordinfoWithoutHash[w].docs[p] = wordinfoWithoutHash[w].docs[p] - wordinfoWithoutHash[w].docs[p-1]
-    for w in range(0,len(wordinfoWithoutHash)):
-        for p in range(len(wordinfoWithoutHash[w].docs)-1,0,-1):
-            if wordinfoWithoutHash[w].pos[p] -wordinfoWithoutHash[w].pos[p-1]>=0:
-                wordinfoWithoutHash[w].pos[p] = wordinfoWithoutHash[w].pos[p] - wordinfoWithoutHash[w].pos[p-1]
+    for w in range(0,len(wordinfo)):
+        for p in range(len(wordinfo[w].docs)-1,0,-1):
+            wordinfo[w].docs[p] = wordinfo[w].docs[p] - wordinfo[w].docs[p-1]
+    for w in range(0,len(wordinfo)):
+        for p in range(len(wordinfo[w].docs)-1,0,-1):
+            if wordinfo[w].pos[p] -wordinfo[w].pos[p-1]>=0:
+                wordinfo[w].pos[p] = wordinfo[w].pos[p] - wordinfo[w].pos[p-1]
     
     #inverted index with hashmap 
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_hashmap.txt", "w",encoding=" utf-8 ")
@@ -149,11 +176,12 @@ if os.path.exists(filename):
     f.close()
     #inverted index without hashmap 
     f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_withouthashmap.txt", "w",encoding=" utf-8 ")
-    for w in range(0,len(wordinfoWithoutHash)):
-        f.write(str(wordinfoWithoutHash[w].termid) + " " + str(wordinfoWithoutHash[w].numberOfOccurences) +" "+str(wordinfoWithoutHash[w].totalNoOfDocs) +" ")
-        for p in range(0,len(wordinfoWithoutHash[w].pos)):
-            f.write(str(wordinfoWithoutHash[w].docs[p]) +","+str(wordinfoWithoutHash[w].pos[p]) + " ")
+    for w in range(0,len(wordinfo)):
+        f.write(str(wordinfo[w].termid) + " " + str(wordinfo[w].numberOfOccurences) +" "+str(wordinfo[w].totalNoOfDocs) +" ")
+        for p in range(0,len(wordinfo[w].pos)):
+            f.write(str(wordinfo[w].docs[p]) +","+str(wordinfo[w].pos[p]) + " ")
         f.write("\n")            
+    
     f.close()
     
 else:
