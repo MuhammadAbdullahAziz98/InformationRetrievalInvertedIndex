@@ -13,7 +13,7 @@ import sys
 from bs4 import BeautifulSoup,Comment
 import re
 from nltk.stem.porter import PorterStemmer
-from operator import itemgetter
+
 class TokenHashmap:
     numberOfOccurences = 0
     totalNoOfDocs = 0
@@ -35,11 +35,13 @@ class Token:
 
 def custom_sort(t):
     return t.termid
-#getting arguments:
 
+#getting arguments:
 filename = sys.argv[1]
+
 stopwords = dict()
 stopwordsFile = r"C:\Users\lenovo\Downloads\stoplist.txt"   #change  path for stopwords list
+
 if os.path.exists(stopwordsFile):
     swfp = open(stopwordsFile,'r')
     content = swfp.readlines()
@@ -53,7 +55,7 @@ if os.path.exists(filename):
     wordinfoHash = dict()
     wordinfoWithoutHash = list()
     p_stemmer = PorterStemmer()
-    for file in glob.glob("*.txt"):
+    for file in glob.glob("*"):
         fp = open(file,'r',encoding='utf-8', errors='ignore')
         fd = open(r"C:\Users\lenovo\Documents\irAssignment1\docids.txt", "a",encoding=" utf-8 ")
         fd.write(file + "\\t" + str(docid)+"\n")
@@ -70,7 +72,8 @@ if os.path.exists(filename):
             docWords = list(el.stripped_strings)
            # print(docWords)
             vocab = list()
-            pattern = pattern = r'[A-Z]+\-[A-Z]+|[a-z]+\-[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'#[A-Z]+|[A-Z][a-z]+|[a-z]+|[0-9]+|\w+-\w+|\w+.\w+|\w+_\w+'
+            pattern = r'[A-Z]+\-[A-Z]+|[a-z]+\-[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'
+            
             for w in docWords:
                 vocab.append(re.findall(pattern,w))
             vocab = [item for sublist in vocab for item in sublist]
