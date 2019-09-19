@@ -32,7 +32,6 @@ filename = sys.argv[1]
 if filename == None or filename=="":
     print("No corpus provided")
 else:
-
     stopwords = dict()
     stopwordsFile = r"C:\Users\lenovo\Downloads\stoplist.txt"   #change  path for stopwords list
     
@@ -57,49 +56,45 @@ else:
             try:
                 fp = open(file,"r",encoding="Latin-1")
             except IOError:
+                fp = None
                 print("Can't open")            #check after opening file
             if fp:
                 fd = open(r"C:\Users\lenovo\Documents\irAssignment1\docids.txt", "a",encoding=" utf-8 ")
                 fd.write(file + "\\t" + str(docid)+"\n")
                 fd.close()
-        
-    
-            docid = docid+1
-            soup = BeautifulSoup(fp, 'html.parser')
-            el = soup.find('body')
-            if el:
-                for element in el(text=lambda text: isinstance(text, Comment)):
-                    element.extract()
-                for script in soup(["script", "style"]):                   
-                    script.extract()
-                docWords = soup.body.get_text()
-                pattern = r'[0-9]+\.[0-9]+|[A-Z]+\.[A-Z]+|[a-z]+\.[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'
-                
-                #for w in docWords:
-                vocab = re.findall(pattern,docWords)
-                print(vocab)
-                for i, w in enumerate(vocab):
-                    w = w.lower()
-                    w = p_stemmer.stem(w)
-                    if w not in worddict and w not in stopwords:
-                        print(termid)
-                        worddict[w] = termid
-                        #without hashmap
-                        t = TokenWithoutHashmap()
-                        t.docid = docid
-                        t.termid = termid
-                        t.pos = i
-                        wordinfoWithoutHash.append(t)
-                        termid = termid+1
-                    else:
-                        ids = worddict.get(w,None)
-                        if ids:
+                docid = docid+1
+                soup = BeautifulSoup(fp, 'html.parser')
+                el = soup.find('body')
+                if el:
+                    for element in el(text=lambda text: isinstance(text, Comment)):
+                        element.extract()
+                    for script in soup(["script", "style"]):                   
+                        script.extract()
+                    docWords = soup.body.get_text()
+                    pattern =  r'\$*\w+\-*\.*\w+|^\s|\$*\w+\.\w+\.w*'
+                    vocab = re.findall(pattern,docWords)
+                    for i, w in enumerate(vocab):
+                        w = w.lower()
+                        w = p_stemmer.stem(w)
+                        if w!= '\n' and w!= '' and w!=' ' and w!='\t' and w not in worddict and w not in stopwords:
+                            print(termid)
+                            worddict[w] = termid
+                            #without hashmap
                             t = TokenWithoutHashmap()
                             t.docid = docid
-                            t.termid = ids
+                            t.termid = termid
                             t.pos = i
                             wordinfoWithoutHash.append(t)
-                fp.close()
+                            termid = termid+1
+                        else:
+                            ids = worddict.get(w,None)
+                            if ids:
+                                t = TokenWithoutHashmap()
+                                t.docid = docid
+                                t.termid = ids
+                                t.pos = i
+                                wordinfoWithoutHash.append(t)
+                    fp.close()
         
         #without hashmap:
         #sort on termid:

@@ -45,52 +45,50 @@ else:
         fd.write("")
         fd.close()
     
-        for file in glob.glob("*"):
+        for file in glob.glob("Clueweb12-0901wb-49-18208"):
             try:
                 fp = open(file,"r",encoding="Latin-1")
             except IOError:
+                fp = None
                 print("Can't open")            #check after opening file
             if fp:
                 fd = open(r"C:\Users\lenovo\Documents\irAssignment1\docids.txt", "a",encoding=" utf-8 ")
                 fd.write(file + "\\t" + str(docid)+"\n")
                 fd.close()
         
-            docid = docid+1
-            soup = BeautifulSoup(fp, 'html.parser')
-            el = soup.find('body')
-            if el:
-                for element in el(text=lambda text: isinstance(text, Comment)):
-                    element.extract()
-                for script in soup(["script", "style"]):                   
-                    script.extract()
-                docWords = soup.body.get_text()
-                pattern = r'[0-9]+\.[0-9]+|[A-Z]+\.[A-Z]+|[a-z]+\.[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'
-                
-                #for w in docWords:
-                vocab = re.findall(pattern,docWords)
-                print(vocab)
-                for i, w in enumerate(vocab):
-                    w = w.lower()
-                    w = p_stemmer.stem(w)
-                    if w not in worddict and w not in stopwords:
-                        print(termid)
-                        worddict[w] = termid
-                        wordinfoHash[termid] = TokenHashmap()
-                        wordinfoHash[termid].docs = list()
-                        wordinfoHash[termid].pos = list()
-                        wordinfoHash[termid].docs.append(docid)
-                        wordinfoHash[termid].pos.append(i)
-                        wordinfoHash[termid].numberOfOccurences = wordinfoHash[termid].numberOfOccurences+1
-                        wordinfoHash[termid].totalNoOfDocs = wordinfoHash[termid].totalNoOfDocs+1    
-                        termid = termid+1
-                    else:
-                        ids = worddict.get(w,None)
-                        if ids:
-                            wordinfoHash[ids].pos.append(i)
-                            wordinfoHash[ids].docs.append(docid)
-                            wordinfoHash[ids].numberOfOccurences = wordinfoHash[ids].numberOfOccurences+1
-                            wordinfoHash[ids].totalNoOfDocs = wordinfoHash[ids].totalNoOfDocs+1
-                fp.close()
+                docid = docid+1
+                soup = BeautifulSoup(fp, 'html.parser')
+                el = soup.find('body')
+                if el:
+                    for element in el(text=lambda text: isinstance(text, Comment)):
+                        element.extract()
+                    for script in soup(["script", "style"]):                   
+                        script.extract()
+                    docWords = soup.body.get_text()
+                    pattern = r'\$*\w+\-*\.*\w+|^\s|\$*\w+\.\w+\.w*'
+                    vocab = re.findall(pattern,docWords)
+                    for i, w in enumerate(vocab):
+                        w = w.lower()
+                        w = p_stemmer.stem(w)
+                        if w!= '\n' and w!= '' and w!=' ' and w!='\t' and w not in worddict and w not in stopwords:
+                            print(termid)
+                            worddict[w] = termid
+                            wordinfoHash[termid] = TokenHashmap()
+                            wordinfoHash[termid].docs = list()
+                            wordinfoHash[termid].pos = list()
+                            wordinfoHash[termid].docs.append(docid)
+                            wordinfoHash[termid].pos.append(i)
+                            wordinfoHash[termid].numberOfOccurences = wordinfoHash[termid].numberOfOccurences+1
+                            wordinfoHash[termid].totalNoOfDocs = wordinfoHash[termid].totalNoOfDocs+1    
+                            termid = termid+1
+                        else:
+                            ids = worddict.get(w,None)
+                            if ids:
+                                wordinfoHash[ids].pos.append(i)
+                                wordinfoHash[ids].docs.append(docid)
+                                wordinfoHash[ids].numberOfOccurences = wordinfoHash[ids].numberOfOccurences+1
+                                wordinfoHash[ids].totalNoOfDocs = wordinfoHash[ids].totalNoOfDocs+1
+                    fp.close()
     
         #termids.txt
         f = open(r"C:\Users\lenovo\Documents\irAssignment1\termids.txt", "w",encoding=" utf-8 ")
@@ -112,7 +110,7 @@ else:
         f = open(r"C:\Users\lenovo\Documents\irAssignment1\termindex_hashmap.txt", "w",encoding=" utf-8 ")
         fi = open(r"C:\Users\lenovo\Documents\irAssignment1\terminfo.txt", "w",encoding=" utf-8 ")
         for w in wordinfoHash:
-            fi.write(str(w)+"\t" +str(f.tell()))
+            fi.write(str(w)+"\\t" +str(f.tell()))
             fi.write("\n")            
             f.write(str(w) + " " + str(wordinfoHash[w].numberOfOccurences) +" "+str(wordinfoHash[w].totalNoOfDocs) +" ")
             for p in range(0,len(wordinfoHash[w].pos)):
