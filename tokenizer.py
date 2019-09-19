@@ -8,7 +8,7 @@ Created on Sun Sep  8 21:17:32 2019
 # -*- coding: utf-8 -*-
 
 #imports
-import os
+import os,glob
 import sys
 from bs4 import BeautifulSoup,Comment
 import re
@@ -54,7 +54,7 @@ if os.path.exists(filename):
     wordinfoHash = dict()
     wordinfoWithoutHash = list()
     p_stemmer = PorterStemmer()
-    for file in os.listdir(os.getcwd()):
+    for file in glob.glob("*"):
         try:
             fp = open(file,"r",encoding="Latin-1")
         except IOError:
@@ -66,15 +66,14 @@ if os.path.exists(filename):
     
 
         docid = docid+1
-            soup = BeautifulSoup(fp, 'html.parser')
+        soup = BeautifulSoup(fp, 'html.parser')
         el = soup.find('body')
         if el:
             for element in el(text=lambda text: isinstance(text, Comment)):
                 element.extract()
             for script in soup(["script", "style"]):                   
                 script.extract()
-            docWords = soup.get_text()
-            #docWords = list(el.stripped_strings)
+            docWords = list(el.stripped_strings)
             vocab = list()
             pattern = r'[A-Z]+\-[A-Z]+|[a-z]+\-[a-z]+|[A-Z]+\'[A-Z]+|[a-z]+\'[a-z]+|[A-Z][a-z]+|[a-z]+|[A-Z]+|[0-9]+'
             
@@ -85,6 +84,7 @@ if os.path.exists(filename):
                 w = w.lower()
                 w = p_stemmer.stem(w)
                 if w not in worddict and w not in stopwords:
+                    print(termid)
                     worddict[w] = termid
                     wordinfoHash[termid] = TokenHashmap()
                     wordinfoHash[termid].docs = list()
