@@ -71,7 +71,7 @@ else:
                     for script in soup(["script", "style"]):                   
                         script.extract()
                     docWords = soup.body.get_text()
-                    pattern =  r'\$*\w+\-*\.*\w+|^\s|\$*\w+\.\w+\.w*'
+                    pattern = r'\$*\w+\-*\w+|^\s|\$*\w+\.\w+'
                     vocab = re.findall(pattern,docWords)
                     for i, w in enumerate(vocab):
                         w = w.lower()

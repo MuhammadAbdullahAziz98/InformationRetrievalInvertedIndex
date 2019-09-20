@@ -45,7 +45,7 @@ else:
         fd.write("")
         fd.close()
     
-        for file in glob.glob("Clueweb12-0901wb-49-18208"):
+        for file in glob.glob("*"):
             try:
                 fp = open(file,"r",encoding="Latin-1")
             except IOError:
@@ -65,7 +65,7 @@ else:
                     for script in soup(["script", "style"]):                   
                         script.extract()
                     docWords = soup.body.get_text()
-                    pattern = r'\$*\w+\-*\.*\w+|^\s|\$*\w+\.\w+\.w*'
+                    pattern = r'\$*\w+\-*\w+|^\s|\$*\w+\.\w+'
                     vocab = re.findall(pattern,docWords)
                     for i, w in enumerate(vocab):
                         w = w.lower()
